@@ -1,0 +1,126 @@
+body{
+	margin:0;
+	padding: 0;
+	background: url(https://wallpapercave.com/wp/lkP9XMD.jpg) no-repeat;
+	background-size: cover;
+	padding-top: 100px;
+}
+.background2{
+	margin: 0;
+	padding:0;
+	padding-top: 120px;
+	background-size: cover;
+    background: url(https://dm0qx8t0i9gc9.cloudfront.net/thumbnails/video/SPx5Yus/videoblocks-large-screen-of-code-for-hacker-hands-typing-malicious-code-a-black-hat-programmer-hacking-into-illegal-personal-data-coding-ransomware-attack-to-steal-personal-data-in-cyber-attack_bkyvczqzu_thumbnail-1080_01.png) no-repeat center center fixed;
+
+}
+.edit1{
+	color: white;
+}
+
+.background3{
+	margin: 0;
+	padding:0;
+	padding-top: 120px;
+	background-size: cover;
+    background: url(http://www.centives.net/S/wp-content/uploads/2012/05/052312_0615_TheCityOfTo1.jpg) no-repeat center center fixed;
+}
+
+.edit2{
+	color: white;
+}
+
+.background4{
+	margin: 0;
+	padding:0;
+	padding-top: 130px;
+	background-size: cover;
+    background: url(https://imagesvc.meredithcorp.io/v3/mm/image?url=https:%2F%2Fstatic.onecms.io%2Fwp-content%2Fuploads%2Fsites%2F28%2F2018%2F06%2Fmandarina.jpg) no-repeat center center fixed;
+}
+.edit3{
+	color: white;
+}
+
+.navbar {
+  overflow: hidden;
+  background-color: black;
+  position: fixed;
+  top: 0;
+  width: 100%;
+
+
+}
+
+.navbar a {
+  display: inline-block;
+  padding: 15px 130px;
+  color: white;
+  float: center;
+  position: relative;
+  text-decoration: none;
+  font-size: 18px;
+  transition: 0.4s;
+
+
+}
+
+
+.container {
+  padding: 18px;
+  margin-top: 35px;
+  height: 100px;
+  position: absolute;
+}
+
+.box{
+	width: 450px;
+	background: rgba(0, 0, 0, 0.4);
+	padding: 40px;
+	text-align: center;
+	margin: auto;
+	margin-top: 5%;
+	color: white;
+	font-family: 'Century Gothic',sans-serif ;
+
+
+}
+.box-img{
+	border-radius: 50%;
+	width: 200px;
+	height: 200px;
+}
+
+.box h1{
+	font-size: 40px;
+	letter-spacing: 4px;
+	font-weight: 100;
+	color: white;
+}
+
+.box h4{
+	font-size: 25px;
+	letter-spacing: 3px;
+	font-weight: 100;
+	color: black;
+}
+
+.box p{
+	text-align: justify;
+}
+ul{
+	margin: 0;
+	padding: 0;
+}
+.box li{
+	display: inline-block;
+	margin: 6px;
+	list-style: none;
+}
+.box li a{
+	color: white;
+	text-decoration: none;
+	font-size: 60px;
+	transition: all ease-in-out 250ms;
+}
+.box li a:hover{
+	color: #b9b9b9;
+}
