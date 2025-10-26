@@ -4,13 +4,23 @@ import session from "express-session";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import path from "path";
+import { fileURLToPath } from "url";
+
+// --- Fix for Node ESM dirname ---
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// --- Diagnostic startup logging ---
+console.log("🟢 Starting PortfolioForge backend...");
 
 const app = express();
 
-// Session configuration
+// --- Session configuration ---
 app.use(
   session({
-    secret: process.env.SESSION_SECRET || "fallback-secret-please-set-SESSION_SECRET",
+    secret:
+      process.env.SESSION_SECRET ||
+      "fallback-secret-please-set-SESSION_SECRET",
     resave: false,
     saveUninitialized: false,
     cookie: {
@@ -22,31 +32,36 @@ app.use(
   })
 );
 
-declare module 'express-session' {
+declare module "express-session" {
   interface SessionData {
     isAdmin: boolean;
   }
 }
 
-declare module 'http' {
+declare module "http" {
   interface IncomingMessage {
-    rawBody: unknown
+    rawBody: unknown;
   }
 }
-app.use(express.json({
-  verify: (req, _res, buf) => {
-    req.rawBody = buf;
-  }
-}));
+
+// --- Middleware setup ---
+app.use(
+  express.json({
+    verify: (req, _res, buf) => {
+      req.rawBody = buf;
+    },
+  })
+);
 app.use(express.urlencoded({ extended: false }));
 
-// Serve attached_assets directory (generated images and uploads)
-const assetsPath = path.resolve(import.meta.dirname, "..", "attached_assets");
+// --- Serve attached_assets directory (uploads, generated images) ---
+const assetsPath = path.resolve(__dirname, "..", "attached_assets");
 app.use("/attached_assets", express.static(assetsPath));
 
+// --- Request logging middleware ---
 app.use((req, res, next) => {
   const start = Date.now();
-  const path = req.path;
+  const reqPath = req.path;
   let capturedJsonResponse: Record<string, any> | undefined = undefined;
 
   const originalResJson = res.json;
@@ -57,16 +72,14 @@ app.use((req, res, next) => {
 
   res.on("finish", () => {
     const duration = Date.now() - start;
-    if (path.startsWith("/api")) {
-      let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
+    if (reqPath.startsWith("/api")) {
+      let logLine = `${req.method} ${reqPath} ${res.statusCode} in ${duration}ms`;
       if (capturedJsonResponse) {
         logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
       }
-
       if (logLine.length > 80) {
         logLine = logLine.slice(0, 79) + "…";
       }
-
       log(logLine);
     }
   });
@@ -74,36 +87,48 @@ app.use((req, res, next) => {
   next();
 });
 
+// --- Catch async errors globally ---
+process.on("unhandledRejection", (reason) => {
+  console.error("🚨 Unhandled Promise Rejection:", reason);
+});
+process.on("uncaughtException", (err) => {
+  console.error("💥 Uncaught Exception:", err);
+});
+
 (async () => {
-  const server = await registerRoutes(app);
+  console.log("🧩 Entered async startup");
+  try {
+    const server = await registerRoutes(app);
+    console.log("✅ Routes registered");
 
-  app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
-    const status = err.status || err.statusCode || 500;
-    const message = err.message || "Internal Server Error";
+    // Error handling middleware
+    app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
+      const status = err.status || err.statusCode || 500;
+      const message = err.message || "Internal Server Error";
+      console.error("💥 Route error:", err);
+      res.status(status).json({ message });
+    });
 
-    res.status(status).json({ message });
-    throw err;
-  });
+    // Vite setup or static serving
+    if (app.get("env") === "development") {
+      console.log("⚙️ Setting up Vite dev server...");
+      await setupVite(app, server);
+      console.log("✅ Vite dev server ready");
+    } else {
+      console.log("📦 Serving static production build...");
+      serveStatic(app);
+      console.log("✅ Static serving enabled");
+    }
 
-  // importantly only setup vite in development and after
-  // setting up all the other routes so the catch-all route
-  // doesn't interfere with the other routes
-  if (app.get("env") === "development") {
-    await setupVite(app, server);
-  } else {
-    serveStatic(app);
+    // Start listening
+    const port = parseInt(process.env.PORT || "5000", 10);
+    console.log("⚙️ Preparing to listen on port", port);
+
+    server.listen(port, "0.0.0.0", () => {
+      console.log(`🚀 PortfolioForge running at http://localhost:${port}`);
+      console.log(`🌍 Environment: ${process.env.NODE_ENV}`);
+    });
+  } catch (err) {
+    console.error("💥 Startup failed:", err);
   }
-
-  // ALWAYS serve the app on the port specified in the environment variable PORT
-  // Other ports are firewalled. Default to 5000 if not specified.
-  // this serves both the API and the client.
-  // It is the only port that is not firewalled.
-  const port = parseInt(process.env.PORT || '5000', 10);
-  server.listen({
-    port,
-    host: "0.0.0.0",
-    reusePort: true,
-  }, () => {
-    log(`serving on port ${port}`);
-  });
 })();
